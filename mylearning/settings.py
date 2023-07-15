@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mylearning.wsgi.application'
+
+AUTH_USER_MODEL = 'accounts.User'
 
 
 # Database
@@ -132,3 +136,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'host@gmail.com'
+EMAIL_HOST_PASSWORD = 'xxxxx'
+EMAIL_USE_TLS = True
