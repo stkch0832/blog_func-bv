@@ -13,12 +13,30 @@
             <li class="nav-item">
                 <a class="nav-link" href="#">新規投稿</a>
             </li>
+            {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    ユーザー設定
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <li><a class="dropdown-item" href="#">プロフィール設定</a></li>
+                    <li><a class="dropdown-item" href="#">メールアドレス設定</a></li>
+                    <li><a class="dropdown-item" href="#">パスワード設定</a></li>
+                    <li><a class="dropdown-item" href="#">アカウント削除</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'accounts:user_logout' %}">ログアウト</a>
+            </li>
+            {% else %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'accounts:signup' %}">ユーザー登録</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">ログイン</a>
+                <a class="nav-link" href="{% url 'accounts:user_login' %}">ログイン</a>
             </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

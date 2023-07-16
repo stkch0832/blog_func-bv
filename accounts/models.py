@@ -103,13 +103,11 @@ class UserActivateToken(models.Model):
 
 
 @receiver(post_save, sender=User)
-def generate_random_username(sender, instance, created, **kwargs):
+def user_authentification(sender, instance, created, **kwargs):
     if created and not instance.username:
         instance.username = instance.generate_random_username()
         instance.save()
 
-@receiver(post_save, sender=User)
-def publish_token(sender, instance, **kwargs):
     current_time = timezone.now()
     user_activate_token = UserActivateToken.objects.create(
         user=instance,

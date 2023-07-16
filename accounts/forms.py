@@ -51,3 +51,18 @@ class SignupForm(forms.ModelForm):
         user.set_password(self.cleaned_data['password'])
         user.save()
         return user
+
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(
+        label='メールアドレス',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'}
+        )
+    )
+    password = forms.CharField(
+        label='パスワード',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control'}
+        )
+    )
