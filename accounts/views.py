@@ -1,14 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from . import forms
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-from .models import UserActivateToken
+from .models import User, UserActivateToken, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 def index(request):
     return render(request, 'accounts/index.html')
 
+# ===== アカウント ===== #
 
 def signup(request):
     signup_form = forms.SignupForm(request.POST or None)
@@ -66,3 +67,47 @@ def user_logout(request):
     logout(request)
     messages.success(request, 'ログアウトしました')
     return redirect('accounts:index')
+
+
+# ===== プロフィール ===== #
+@login_required
+def profile_detail(request, pk):
+    profile = get_object_or_404(Profile, user_id=pk)
+    user = profile.user
+    return render(request, 'accounts/profile_detail.html', context={
+        'profile': profile,
+        'user': user,
+    })
+
+
+@login_required
+def profile_edit(request, pk):
+    profile_data = get_object_or_404(Profile, user_id=pk)
+    if request.method == 'POST':
+        profile_form = forms.ProfileForm(
+            request.POST or None,
+            request.FILES or None,
+            instance=profile_data
+        )
+        if profile_form.is_valid():
+            profile_instance = profile_form.save(commit=False)
+
+            user_instance = profile_instance.user
+            user_instance.username = profile_form.cleaned_data['username']
+            user_instance.save()
+
+            profile_instance.save()
+            
+            messages.success(request, 'プロフィールを更新しました')
+            return redirect('accounts:profile_detail', pk=pk )
+    else:
+        profile_form = forms.ProfileForm(initial={
+            'username': profile_data.user.username,
+            'introduction': profile_data.introduction,
+            'birth': profile_data.birth,
+            'thumbnail': profile_data.thumbnail,
+        })
+
+    return render(request, 'accounts/profile_form.html', context={
+        'profile_form': profile_form,
+    })

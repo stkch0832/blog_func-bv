@@ -11,6 +11,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 import random
 import string
+from datetime import date
 
 # === User === #
 class UserManager(BaseUserManager):
@@ -51,6 +52,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=50,
         unique=True,
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -133,3 +137,50 @@ def user_authentification(sender, instance, created, **kwargs):
         to,
     )
     email.send()
+
+
+# === プロフィール === #
+
+class Profile(models.Model):
+    user = models.OneToOneField(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+    introduction = models.TextField(
+        verbose_name="紹介文",
+        max_length=255,
+    )
+    birth = models.DateField(
+        verbose_name="生年月日",
+        blank=True,
+        null=True,
+    )
+
+    @property
+    def age(self):
+        if self.birth:
+            today = date.today()
+            return today.year - self.birth.year - ((today.month, today.day) < (self.birth.month, self.birth.day))
+        else:
+            return
+
+    thumbnail = models.ImageField(
+        upload_to='accounts/user_images/',
+        verbose_name="サムネイル",
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.username
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        profile = Profile.objects.create(user=instance, birth=None, age=None)
+        instance.profile = profile
+        instance.save()

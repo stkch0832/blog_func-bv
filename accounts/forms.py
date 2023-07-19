@@ -1,10 +1,12 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from .models import Profile
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
+# ===== アカウント ===== #
 class SignupForm(forms.ModelForm):
 
     confirm_password = forms.CharField(
@@ -66,3 +68,34 @@ class LoginForm(forms.Form):
             attrs={'class': 'form-control'}
         )
     )
+
+# ===== プロフィール ===== #
+class ProfileForm(forms.ModelForm):
+    username = forms.CharField(
+        label='ユーザー名',
+        widget=forms.TextInput(attrs={'class': 'form-control mb-3'})
+    )
+
+    class Meta:
+        model = Profile
+        fields = ('username', 'introduction', 'birth', 'thumbnail',)
+        labels = {
+            'introduction': '紹介文',
+            'birth': '生年月日',
+            'thumbnail': 'サムネイル画像'
+        }
+        widgets = {
+            'introduction': forms.Textarea(attrs={
+                'class': 'form-control mb-3',
+                'rows': 6,
+                'cols': 50
+                }),
+            'birth': forms.NumberInput(attrs={
+                'class': 'form-control mb-3',
+                'type': 'date'
+                }),
+            'thumbnail': forms.ClearableFileInput(attrs={
+                'class': 'form-control mb-3',
+                })
+
+        }
