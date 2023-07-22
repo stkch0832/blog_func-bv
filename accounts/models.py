@@ -156,6 +156,11 @@ class Profile(models.Model):
         blank=True,
         null=True,
     )
+    age = models.IntegerField(
+        verbose_name="年齢",
+        null=True,
+        blank=True
+    )
 
     @property
     def age(self):
@@ -181,6 +186,6 @@ class Profile(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        profile = Profile.objects.create(user=instance, birth=None, age=None)
+        profile = Profile.objects.create(user=instance, birth=None)
         instance.profile = profile
         instance.save()

@@ -99,3 +99,29 @@ class ProfileForm(forms.ModelForm):
                 })
 
         }
+
+
+class ChangeEmailForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ('email', 'password',)
+        labels = {
+            'email': 'メールアドレス',
+            'password': 'パスワード',
+        }
+        widgets = {
+            'email': forms.EmailInput(
+                attrs={'class': 'form-control'}
+            ),
+            'password': forms.PasswordInput(
+                attrs={'class':'form-control'}
+            ),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('このメールアドレスは既に使用されています')
+        return email
+

@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import User, UserActivateToken, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import check_password
 
 def index(request):
     return render(request, 'accounts/index.html')
@@ -97,7 +98,7 @@ def profile_edit(request, pk):
             user_instance.save()
 
             profile_instance.save()
-            
+
             messages.success(request, 'プロフィールを更新しました')
             return redirect('accounts:profile_detail', pk=pk )
     else:
@@ -110,4 +111,34 @@ def profile_edit(request, pk):
 
     return render(request, 'accounts/profile_form.html', context={
         'profile_form': profile_form,
+    })
+
+
+@login_required
+def change_email(request, pk):
+    user_data = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        change_email_form = forms.ChangeEmailForm(request.POST or None)
+        if change_email_form.is_valid():
+
+                email = change_email_form.cleaned_data.get('email')
+                password = change_email_form.cleaned_data.get('password')
+                user = authenticate(
+                    email = user_data.email,
+                    password = password
+                )
+                if user:
+                    user_data.email = email
+                    user_data.save()
+                    messages.success(request, 'メールアドレスの変更が完了しました')
+                    return redirect('accounts:change_email', pk=pk)
+                else:
+                    change_email_form.add_error('password', 'パスワードが間違っています')
+    else:
+        change_email_form = forms.ChangeEmailForm(initial={
+            'email': user_data.email
+        })
+
+    return render(request, 'accounts/changeEmail_form.html', context={
+        'change_email_form': change_email_form,
     })
