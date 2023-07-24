@@ -69,7 +69,7 @@ class LoginForm(forms.Form):
         )
     )
 
-# ===== プロフィール ===== #
+# ===== プロフィール設定 ===== #
 class ProfileForm(forms.ModelForm):
     username = forms.CharField(
         label='ユーザー名',
@@ -100,7 +100,7 @@ class ProfileForm(forms.ModelForm):
 
         }
 
-
+# ===== メールアドレス設定 ===== #
 class ChangeEmailForm(forms.ModelForm):
 
     class Meta:
@@ -125,3 +125,42 @@ class ChangeEmailForm(forms.ModelForm):
             raise forms.ValidationError('このメールアドレスは既に使用されています')
         return email
 
+
+# ===== パスワード設定 ===== #
+class ChangePasswordForm(forms.Form):
+    current_password = forms.CharField(
+        required=True,
+        label=' 現在のパスワード',
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control',
+            }
+        )
+    )
+    new_password = forms.CharField(
+        required=True,
+        label='新しいパスワード',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control'}
+        ),
+    )
+    confirm_password = forms.CharField(
+        required=True,
+        label='確認用パスワード',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control'}
+        ),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        print(cleaned_data)
+        new_password = cleaned_data.get('new_password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        print(f'new: {new_password}')
+        print(f'confirm: {confirm_password}')
+
+        if new_password and confirm_password and new_password != confirm_password:
+            raise ValidationError('新しいパスワードが一致しません')
+        return cleaned_data

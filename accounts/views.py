@@ -5,7 +5,7 @@ from django.contrib import messages
 from .models import User, UserActivateToken, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.password_validation import validate_password
 
 def index(request):
     return render(request, 'accounts/index.html')
@@ -114,13 +114,13 @@ def profile_edit(request, pk):
     })
 
 
+# ===== メールアドレス ===== #
 @login_required
 def change_email(request, pk):
     user_data = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
         change_email_form = forms.ChangeEmailForm(request.POST or None)
         if change_email_form.is_valid():
-
                 email = change_email_form.cleaned_data.get('email')
                 password = change_email_form.cleaned_data.get('password')
                 user = authenticate(
@@ -141,4 +141,38 @@ def change_email(request, pk):
 
     return render(request, 'accounts/changeEmail_form.html', context={
         'change_email_form': change_email_form,
+    })
+
+
+# ===== パスワード ===== #
+@login_required
+def change_password(request, pk):
+    user_data = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        change_password_form = forms.ChangePasswordForm(request.POST or None)
+        if change_password_form.is_valid():
+            try:
+                new_password = change_password_form.cleaned_data['new_password']
+                validate_password(new_password, user_data)
+                current_password = change_password_form.cleaned_data.get('current_password')
+
+                print(current_password)
+                user = authenticate(
+                    email=user_data.email,
+                    password=current_password,
+                )
+                if user is not None:
+                    user.set_password(new_password)
+                    user.save()
+                    login(request, user)
+                    messages.success(request, 'パスワードの変更が完了しました')
+                    return redirect('accounts:change_password', pk=pk)
+                else:
+                    change_password_form.add_error(None, 'パスワードが間違っています')
+            except ValidationError as e:
+                change_password_form.add_error('new_password', e)
+    else:
+        change_password_form = forms.ChangePasswordForm()
+    return render(request, 'accounts/changePassword_form.html', context={
+        'change_password_form': change_password_form,
     })
