@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+アカウント削除
+{% endblock %}
+
+{% block content %}
+
+<div class="w-25 border m-auto p-5">
+    <h2 class="text-center mb-5">アカウント削除</h2>
+    <p>アカウントを削除すると、すべてのデータが削除されます。<br>
+        ご注意ください。
+    </p>
+    <form action="" method="post">
+        {% csrf_token %}
+        <button id="confirmButton" class="btn btn-danger">アカウントを削除する</button>
+    </form>
+</div>
+
+<script>
+    function confirmButton() {
+        confirm('本当に削除しますか？');
+    }
+
+    let btn = document.getElementById('confirmButton');
+    btn.addEventListener('click', confirmButton);
+</script>
+
+{% endblock %}

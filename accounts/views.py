@@ -6,6 +6,14 @@ from .models import User, UserActivateToken, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
+import json
+from django.http import JsonResponse
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+import random
+import string
+
 
 def index(request):
     return render(request, 'accounts/index.html')
@@ -176,3 +184,59 @@ def change_password(request, pk):
     return render(request, 'accounts/changePassword_form.html', context={
         'change_password_form': change_password_form,
     })
+
+
+# ===== アカウント削除 ===== #
+@login_required
+def withdrawal(request, pk):
+    user_data = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        try:
+            # is_active = false
+            user_data.is_active = False
+            
+            # メール通知
+            subject = 'Notice of completion of withdrawal process'
+            body = render_to_string(
+                'accounts/mail_text/withdraw.txt',context={
+                    'username': user_data.username,
+                })
+
+            from_email = ['admin@test.com']
+            to = [user_data.email]
+
+            email = EmailMessage(
+                subject,
+                body,
+                from_email,
+                to,
+            )
+            email.send()
+
+            # email = musk
+            new_email = generate_unique_email()
+            user_data.email = new_email
+            user_data.save()
+
+            # ログアウト
+            logout(request)
+            messages.success(request, 'アカウント削除の手続きを完了致しました')
+            return redirect('accounts:index')
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return render(request, 'accounts/withdrawal.html', context={
+            'user_data': user_data,
+        })
+
+
+def generate_unique_email():
+    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=35))
+    email = f"{random_string}@{''.join(random.choices(string.ascii_letters + string.digits, k=10))}.com"
+
+    while User.objects.filter(email=email).exists():
+        random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=35))
+        email = f"{random_string}@{''.join(random.choices(string.ascii_letters + string.digits, k=10))}.com"
+
+    return email

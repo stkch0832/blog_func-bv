@@ -140,7 +140,6 @@ def user_authentification(sender, instance, created, **kwargs):
 
 
 # === プロフィール === #
-
 class Profile(models.Model):
     user = models.OneToOneField(
         'User',
