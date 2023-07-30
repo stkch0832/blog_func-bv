@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}
+プロフィール|詳細
+{% endblock %}
+
+{% block content %}
+<h2 class="text-center">プロフィール情報</h2>
+
+<div class="card mx-auto" style="width: 18rem;">
+    {% if profile.thumbnail %}
+    <img src="{{ profile.thumbnail.url }}" class="card-img-top" alt="サムネイル画像">
+    {% endif %}
+    <div class="card-body">
+        <h5 class="card-title">{{ user.username }}</h5>
+        <p class="card-text">birth: {{ profile.birth|date:"Y/m/d" }}  (age: {{ profile.age }})</p>
+        <p class="card-text">
+            intro: <br>
+            {{ profile.introduction|linebreaksbr|wordwrap:25 }}
+        </p>
+        <p class="text-center"><a href="{% url 'accounts:profile_edit' user.pk %}" class="btn btn-primary">編集</a></p>
+    </div>
+</div>
+
+{% endblock %}
